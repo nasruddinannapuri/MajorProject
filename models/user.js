@@ -32,7 +32,8 @@ const addUser = async () => {
   user1.addresses.push({ location: "Builtop", city: "Cuddapah" });
   let result = await user1.save();
   console.log(result);
-};
+}; 
+// hello
 
 addUser();
 
