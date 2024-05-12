@@ -8,7 +8,8 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
-const {listingSchema} = require("./schema.js")
+const { listingSchema, reviewSchema } = require("./schema.js");
+const Review = require("./models/reviews.js");
 // 3)for database
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
@@ -61,19 +62,31 @@ app.get(
 );
 
 // middleware of validation schema using joi
-const validateListing = (req, res, next)=>{
-  let {error} = listingSchema.validate(req.body);
+const validateListing = (req, res, next) => {
+  let { error } = listingSchema.validate(req.body);
 
-  if(error){
+  if (error) {
     let errMsg = error.details.map((el) => el.message).join(",");
     throw new ExpressError(400, error);
-  }else{
+  } else {
     next();
   }
-}
+};
+
+const validateReview = (req, res, next) => {
+  let { error } = reviewSchema.validate(req.body);
+
+  if (error) {
+    let errMsg = error.details.map((el) => el.message).join(",");
+    throw new ExpressError(400, error);
+  } else {
+    next();
+  }
+};
 // create route - to accept the post request
 app.post(
-  "/listings", validateListing,
+  "/listings",
+  validateListing,
   wrapAsync(async (req, res, next) => {
     //
     /*  //let {title, description, image, price, country, location} = req.body;
@@ -83,7 +96,7 @@ app.post(
     /* if(!req.body.listing){
       throw new ExpressError(400, "Send valid data for listing");
     } */
-    
+
     const newListing = await Listing.create(req.body.listing);
     /* if(!newListing.title){
       throw new ExpressError(400, "Title is missing");
@@ -114,7 +127,7 @@ app.get(
 app.put(
   "/listings/:id",
   wrapAsync(async (req, res) => {
-    if(!req.body.listing){
+    if (!req.body.listing) {
       throw new ExpressError(400, "Send valid data for listing");
     }
     let { id } = req.params;
@@ -139,11 +152,46 @@ app.get(
   "/listings/:id",
   wrapAsync(async (req, res) => {
     let { id } = req.params;
-    const listing = await Listing.findById(id);
+    const listing = await Listing.findById(id).populate("reviews");
     res.render("listings/show.ejs", { listing });
   })
 );
 
+// Reviews
+// Post Review Route
+app.post(
+  "/listings/:id/reviews",
+  validateReview,
+  wrapAsync(async (req, res) => {
+    let listing = await Listing.findById(req.params.id);
+    let newReview = new Review(req.body.review);
+
+    // console.log(newReview);
+    // console.log(listing);
+    // console.log(Listing.reviews);
+    listing.reviews.push(newReview);
+
+    await newReview.save();
+    await listing.save();
+
+    // console.log("New revew saved");
+    // res.send("new review saved")
+    res.redirect(`/listings/${listing._id}`);
+  })
+);
+
+// Delete Review Route
+app.delete(
+  "/listings/:id/reviews/:reviewId",
+  wrapAsync(async (req, res) => {
+    let { id, reviewId } = req.params;
+
+    await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
+    await Review.findByIdAndDelete(reviewId);
+
+    res.redirect(`/listings/${id}`);
+  })
+);
 /* 
 // 4)testLising model
 app.get("/testListing", async (req, res) => {
@@ -163,17 +211,17 @@ app.get("/testListing", async (req, res) => {
 // handling custom errors:
 // custom error handing middleware
 
-// if above all routes will checked if nothing is 
+// if above all routes will checked if nothing is
 // there(res not send) then here it will come and
-// execute 
-app.all("*", (req, res, next)=>{
+// execute
+app.all("*", (req, res, next) => {
   next(new ExpressError(404, "Page Not Found!"));
-})
+});
 
 app.use((err, req, res, next) => {
-  let { statusCode=500, message="Something went wrong!" } = err;
+  let { statusCode = 500, message = "Something went wrong!" } = err;
   //res.status(statusCode).send(message);
-  res.status(statusCode).render("error.ejs", {err});
+  res.status(statusCode).render("error.ejs", { err });
 });
 
 app.listen(8080, () => {
