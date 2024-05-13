@@ -68,6 +68,7 @@ router.post(
         throw new ExpressError(400, "Location is missing");
       } */
     await newListing.save();
+    
     req.flash("success", "New Listing Created!")
     res.redirect("listings");
   })
