@@ -1,8 +1,7 @@
-// database schema and model designing
-
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const Review = require("./reviews");
+
 const listingSchema = new Schema({
   title: {
     type: String,
@@ -10,21 +9,11 @@ const listingSchema = new Schema({
   },
   description: String,
   image: {
-    fileName: {
-      type: String,
-    },
-    url: {
-      type: String,
-      // set the default value ==> mongoosh-virtual-setfunction for set value
-      default:
-        "https://miro.medium.com/v2/resize:fit:2400/0*hDAyhnOx767w5qma.jpg",
-      set: (v) =>
-        v === ""
-          ? "https://miro.medium.com/v2/resize:fit:2400/0*hDAyhnOx767w5qma.jpg"
-          : v,
+    type: String,
+    default: function () {
+      return this.image ? this.image : "https://miro.medium.com/v2/resize:fit:2400/0*hDAyhnOx767w5qma.jpg";
     },
   },
-
   price: Number,
   location: String,
   country: String,
@@ -34,6 +23,10 @@ const listingSchema = new Schema({
       ref: "Review",
     },
   ],
+  owner: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+  },
 });
 
 listingSchema.post("findOneAndDelete", async (listing) => {
@@ -43,4 +36,5 @@ listingSchema.post("findOneAndDelete", async (listing) => {
 });
 
 const Listing = mongoose.model("Listing", listingSchema);
+
 module.exports = Listing;
