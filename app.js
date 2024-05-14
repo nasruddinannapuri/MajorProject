@@ -1,3 +1,8 @@
+if(process.env.NODE_ENV != "production"){
+  require('dotenv').config();
+}
+
+// console.log(process.env.SECRET)
 //1) require the libraries, packages
 const express = require("express");
 const app = express();
