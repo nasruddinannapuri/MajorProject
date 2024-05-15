@@ -8,11 +8,10 @@ const listingSchema = new Schema({
     required: true,
   },
   description: String,
+  
   image: {
-    type: String,
-    default: function () {
-      return this.image ? this.image : "https://miro.medium.com/v2/resize:fit:2400/0*hDAyhnOx767w5qma.jpg";
-    },
+    url: String,
+    filename: String,
   },
   price: Number,
   location: String,
