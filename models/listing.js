@@ -37,6 +37,10 @@ const listingSchema = new Schema({
       required: true,
     },
   },
+  /* category: {
+    type: String,
+    enum: ['apartment', 'house', 'room', 'cottage', 'villa', 'bungalow', 'studio', 'loft'];
+  } */
  
 });
 

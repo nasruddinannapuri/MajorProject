@@ -24,6 +24,21 @@
      to bootstrap we use !important */
 }
 
+/* Navbar container */
+.navbar-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 5rem; /* Adjust height as needed */
+  background-color: white;
+  border-top: 1px solid #ddd; /* Optional: Add a border at the top of the navbar */
+}
+
+
 /* Footer */
 .f-info-links a {
   text-decoration: none;
