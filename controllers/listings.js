@@ -1,5 +1,8 @@
 const Listing = require("../models/listing.js");
 const ExpressError = require("../utils/ExpressError.js");
+const mbxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
+const mapToken = process.env.MAP_TOKEN;
+const geocodingClient = mbxGeocoding({ accessToken: mapToken });
 
 module.exports.index = async (req, res) => {
   const allListings = await Listing.find({});
@@ -10,19 +13,81 @@ module.exports.renderNewForm = (req, res) => {
   res.render("listings/new.ejs");
 };
 
+
 module.exports.createListing = async (req, res, next) => {
-  let url = req.file.path;
-  let filename = req.file.filename;
-  /*  //let {title, description, image, price, country, location} = req.body;
+  try {
+    // Perform geocoding
+    const geocodingResponse = await geocodingClient
+      .forwardGeocode({
+        query: req.body.listing.location,
+        limit: 1,
+      })
+      .send();
+
+    // Check if location was found
+    if (!geocodingResponse.body.features.length) {
+      throw new Error('Location not found');
+    }
+
+    // Extract geometry from geocoding response
+    const geometry = geocodingResponse.body.features[0].geometry;
+
+    // Ensure the image fields are correctly set
+    const image = {
+      url: req.file.path,
+      filename: req.file.filename,
+    };
+
+    // Debug logs to ensure values are correct
+    console.log('Geometry:', geometry);
+    console.log('Image:', image);
+    console.log('Listing Data:', req.body.listing);
+
+    // Create the new listing object with all required fields
+    const newListing = new Listing({
+      ...req.body.listing,
+      owner: req.user._id,
+      image: image,
+      geometry: geometry,
+    });
+
+    // Save the new listing to the database
+    await newListing.save();
+
+    // Redirect to the listings page after successful save
+    req.flash('success', 'New Listing Created!');
+    res.redirect('/listings');
+  } catch (err) {
+    next(err);
+  }
+};
+/* 
+module.exports.createListing = async (req, res, next) => {
+  try {
+    let geocodingResponse = await geocodingClient
+      .forwardGeocode({
+        query: req.body.listing.location,
+        limit: 2,
+      })
+      .send();
+    
+    // Check if location was found
+    if (!geocodingResponse.body.features.length) {
+      throw new Error("Location not found");
+    }
+
+    let url = req.file.path;
+    let filename = req.file.filename;
+    /*  //let {title, description, image, price, country, location} = req.body;
     let listing = req.body.listing;// instead of above we can also write like this
     console.log(listing);
      */
-  /* if(!req.body.listing){
+    /* if(!req.body.listing){
         throw new ExpressError(400, "Send valid data for listing");
-      } */
+      } 
 
-  const newListing = await Listing.create(req.body.listing);
-  /* if(!newListing.title){
+    const newListing = await Listing.create(req.body.listing);
+    /* if(!newListing.title){
         throw new ExpressError(400, "Title is missing");
       }
       if(!newListing.description){
@@ -30,15 +95,20 @@ module.exports.createListing = async (req, res, next) => {
       }
       if(!newListing.location){
         throw new ExpressError(400, "Location is missing");
-      } */
-  newListing.owner = req.user._id;
-  newListing.image = { url, filename };
-  await newListing.save();
+      } 
+    newListing.owner = req.user._id;
+    newListing.image = { url, filename };
 
-  req.flash("success", "New Listing Created!");
-  res.redirect("/listings");
+    newListing.geometry = geocodingResponse.body.features[0].geometry;
+    let savedListing = await newListing.save();
+    console.log(savedListing);
+    req.flash("success", "New Listing Created!");
+    res.redirect("/listings");
+  } catch (err) {
+    next(err);
+  }
 };
-
+ */
 module.exports.renderEditFrom = async (req, res) => {
   let { id } = req.params;
   const listing = await Listing.findById(id);
@@ -49,8 +119,8 @@ module.exports.renderEditFrom = async (req, res) => {
   }
 
   let originalImageUrl = listing.image.url;
-  originalImageUrl = originalImageUrl.replace("/upload","/upload/w_250");
-   
+  originalImageUrl = originalImageUrl.replace("/upload", "/upload/w_250");
+
   res.render("listings/edit.ejs", { listing, originalImageUrl });
 };
 
