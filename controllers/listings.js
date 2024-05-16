@@ -61,54 +61,7 @@ module.exports.createListing = async (req, res, next) => {
     next(err);
   }
 };
-/* 
-module.exports.createListing = async (req, res, next) => {
-  try {
-    let geocodingResponse = await geocodingClient
-      .forwardGeocode({
-        query: req.body.listing.location,
-        limit: 2,
-      })
-      .send();
-    
-    // Check if location was found
-    if (!geocodingResponse.body.features.length) {
-      throw new Error("Location not found");
-    }
 
-    let url = req.file.path;
-    let filename = req.file.filename;
-    /*  //let {title, description, image, price, country, location} = req.body;
-    let listing = req.body.listing;// instead of above we can also write like this
-    console.log(listing);
-     */
-    /* if(!req.body.listing){
-        throw new ExpressError(400, "Send valid data for listing");
-      } 
-
-    const newListing = await Listing.create(req.body.listing);
-    /* if(!newListing.title){
-        throw new ExpressError(400, "Title is missing");
-      }
-      if(!newListing.description){
-        throw new ExpressError(400, "Description is missing");
-      }
-      if(!newListing.location){
-        throw new ExpressError(400, "Location is missing");
-      } 
-    newListing.owner = req.user._id;
-    newListing.image = { url, filename };
-
-    newListing.geometry = geocodingResponse.body.features[0].geometry;
-    let savedListing = await newListing.save();
-    console.log(savedListing);
-    req.flash("success", "New Listing Created!");
-    res.redirect("/listings");
-  } catch (err) {
-    next(err);
-  }
-};
- */
 module.exports.renderEditFrom = async (req, res) => {
   let { id } = req.params;
   const listing = await Listing.findById(id);

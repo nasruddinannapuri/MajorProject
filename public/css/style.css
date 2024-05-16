@@ -3,10 +3,14 @@
   display: flex;
   flex-direction: column;
   min-width: 100vh;
+ 
+
 }
 .container {
   flex: 1;
+ /*  height: 63vh !important; */
 }
+
 /* Navbar */
 .navbar {
   height: 5rem;
@@ -37,7 +41,6 @@
   background-color: white;
   border-top: 1px solid #ddd; /* Optional: Add a border at the top of the navbar */
 }
-
 
 /* Footer */
 .f-info-links a {

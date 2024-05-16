@@ -1,5 +1,4 @@
 const cloudinary = require("cloudinary").v2;
-const { Store } = require("express-session");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 // to pass configuration details
 // because to connect the backend with the cloudinary and we

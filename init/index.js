@@ -1,12 +1,9 @@
-// index.js
-// logic of initialization
 const express = require("express");
 const mongoose = require("mongoose");
 const initData = require("./data.js");
 const Listing = require("../models/listing.js");
 
 const app = express();
-
 const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 
 main()
@@ -49,8 +46,6 @@ app.get("/reinitialize-data", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
-
-// Other routes and middleware definitions go here...
 
 // Start the server
 const PORT = process.env.PORT || 3000;

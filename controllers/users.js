@@ -1,5 +1,4 @@
 const User = require("../models/userauth");
-const { saveRedirectUrl } = require("../middleware.js");
 
 module.exports.renderSignupForm = (req, res) => {
   res.render("users/signup.ejs");
